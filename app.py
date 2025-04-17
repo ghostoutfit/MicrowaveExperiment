@@ -20,15 +20,6 @@ with left_col:
     q5 = st.text_area("E. What variables need to be held constant? How will you control them?")
     q6 = st.text_area("F. What are the expected results of your experiment? Why?")
 
-    worksheet_data = {
-        "Question": q1,
-        "Safety": q2,
-        "Control Conditions": q3,
-        "Setup": q4,
-        "Measurements": q5,
-        "Expected Results": q6
-    }
-
 # ---- Right Column: GPT Assistant ----
 with right_col:
     st.header("AI Group Coach")
@@ -45,33 +36,32 @@ with right_col:
 
     def generate_response(trigger_source, user_input=""):
         tone_descriptions = {
-            "🧪 Lab Teammate": "You are a calm, precise lab partner. Guide students with questions that encourage them to think critically about their investigation plan.",
-            "😄 Silly Skeptic": "You are a fun, energetic teammate who loves science. Ask silly but smart questions to help your friends question their own assumptions and ideas.",
-            "🧐 Sophisticated Scientist": "You are a scientist who always wants more evidence and clearer reasoning. Push students to be more rigorous."
+            "🧪 Lab Teammate": "Casual, curious, and collaborative. Ask helpful questions.",
+            "😄 Silly Skeptic": "Playful, sarcastic, and smart. Ask silly questions that spark thinking.",
+            "🧐 Sophisticated Scientist": "Serious and precise. Challenge ideas and ask for evidence."
         }
 
         button_instructions = {
-            "experiment": "We have an experiment. Please evaluate it. Ask questions to help us improve it, especially around clarity, safety, and whether it will produce useful data.",
-            "waiting": "We're waiting for our turn with the microwave. Give us two activity options (A or B) to deepen our thinking while we wait.",
-            "results": "We've done a trial. Help us interpret what happened, based on our experiment design."
+            "experiment": "Evaluate our experiment. Ask short questions to help us improve it, especially for safety and data quality.",
+            "waiting": "We're waiting for microwave access. Offer us two short thinking activities to pick from (A or B).",
+            "results": "We finished a trial. Help us figure out what it means with quick, pointed questions.",
+            "chat": "Continue the conversation in a short, curious way. Ask a follow-up based on what the student wrote."
         }
 
         system_prompt = f"""
-You are an AI assistant supporting students as they design and reflect on a microwave oven experiment. You appear in a Streamlit app with worksheet info on the left and student conversation on the right.
+You are an AI assistant in a Streamlit classroom tool, helping students improve their microwave oven experiment. You always speak briefly—just a few sentences max.
 
-Student tone: {tone_descriptions[tone]}
+Tone: {tone_descriptions[tone]}
+Names: {names}
 
-🌟 Behavior Guidelines:
-- Always use students' names naturally in the conversation (from: {names})
-- Never explain how microwave radiation works. Ask questions to help students explain or revise their thinking instead.
-- Never store data or give final answers.
-- If the experiment violates safety rules (e.g., no water, reused foil, no platform, more than 15 seconds, exposed foil edges), don’t approve it—ask them to revise.
-- If the experiment looks good and safe, you may summarize it in one paragraph to copy-paste.
-- Always encourage students to revise their ideas in the worksheet.
+Rules:
+- Never explain how microwave radiation works. Ask questions instead.
+- If the experiment is unsafe, don’t approve it. Instead, ask what they could change.
+- Refer students back to the worksheet (left side) when appropriate.
+- Keep it short, curious, and engaging. Never long-winded.
 
-🧪 Student request: {button_instructions.get(trigger_source, 'Student typed a custom question.')}
-
-💬 Current Plan:
+Student task: {button_instructions.get(trigger_source, 'Custom message')}
+Current plan:
 A. {q1}
 B. {q2}
 C. {q3}
@@ -79,7 +69,7 @@ D. {q4}
 E. {q5}
 F. {q6}
 
-{"Custom student message: " + user_input if user_input else ""}
+Student message: {user_input if user_input else '(none yet)'}
         """
 
         try:
@@ -88,12 +78,12 @@ F. {q6}
                 messages=[{"role": "system", "content": system_prompt}],
                 temperature=0.7
             )
-            reply = response.choices[0].message.content
-            st.session_state.chat_history.append((trigger_source.upper(), reply))
+            reply = response.choices[0].message.content.strip()
+            st.session_state.chat_history.append((names, user_input, reply))
         except Exception as e:
-            st.session_state.chat_history.append(("ERROR", f"Error: {str(e)}"))
+            st.session_state.chat_history.append(("ERROR", user_input, f"Error: {str(e)}"))
 
-    # ---- Button triggers ----
+    # ---- Action Buttons ----
     st.markdown("### Choose an action:")
     b1, b2, b3 = st.columns(3)
     with b1:
@@ -106,13 +96,16 @@ F. {q6}
         if st.button("📊 How can I interpret my results?"):
             generate_response("results")
 
+    # ---- Free Chat Field ----
     st.markdown("---")
-    user_text = st.text_input("Or ask a custom question:")
-    if st.button("Submit question"):
-        if user_text.strip():
-            generate_response("custom", user_text)
+    user_chat = st.text_input("Or respond here to keep the conversation going:")
 
-    st.markdown("### 🧠 AI Responses")
-    for source, msg in st.session_state.chat_history:
-        st.markdown(f"**{source}**")
-        st.info(msg)
+    if st.button("Send"):
+        if user_chat.strip():
+            generate_response("chat", user_chat)
+
+    # ---- Display Chat History ----
+    st.markdown("### 🧠 AI Conversation")
+    for name, user, reply in st.session_state.chat_history:
+        st.markdown(f"**{name if name else 'Student'}:** {user}")
+        st.markdown(f"**AI:** {reply}")
