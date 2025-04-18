@@ -37,11 +37,21 @@ left_col, right_col = st.columns(2)
 
 with left_col:
     st.header("Worksheet")
-    q1 = st.text_area("A. What question are you trying to answer in the investigation you are planning?")
-    q2 = st.text_area("B. What do you need to keep in your experimental design to maintain safety protocols?")
-    q3 = st.text_area("C. A good experiment uses control variables and conditions to clarify how specific changes have affected the outcome. How will you use controls to allow you to compare and interpret results?")
-    q4 = st.text_area("D. Describe your setup, and what measurement you plan to collect. How many trials would you want to do?")
-    q5 = st.text_area("E. What are the expected results of your experiment? Why?")
+
+    st.markdown("<div style='font-size:15px; '>A. What question are you trying to answer in the investigation you are planning?</div>", unsafe_allow_html=True)
+    q1 = st.text_area("", key="q1")
+
+    st.markdown("<div style='font-size:15px; '>B. What do you need to keep in your experimental design to maintain safety protocols?</div>", unsafe_allow_html=True)
+    q2 = st.text_area("", key="q2")
+
+    st.markdown("<div style='font-size:15px; '>C. A good experiment uses control variables and conditions to clarify how specific changes have affected the outcome. How will you use controls to allow you to compare and interpret results?</div>", unsafe_allow_html=True)
+    q3 = st.text_area("", key="q3")
+
+    st.markdown("<div style='font-size:15px; '>D. Describe your setup, and what measurement you plan to collect. How many trials would you want to do?</div>", unsafe_allow_html=True)
+    q4 = st.text_area("", key="q4")
+
+    st.markdown("<div style='font-size:15px; '>E. What are the expected results of your experiment? Why?</div>", unsafe_allow_html=True)
+    q5 = st.text_area("", key="q5")
 
 with right_col:
     st.header("AI Group Coach")
@@ -69,11 +79,49 @@ with right_col:
         if not user_input:
             user_input = user_input_defaults.get(trigger_source, "(No message)")
 
-        system_prompt = f"""
+        if trigger_source == "chat":
+            system_prompt = f"""
+        You are a helpful and approachable lab coach. A student just typed a question into the chat box. This might be a clarifying or logistical question.
+
+        Rules:
+        - You may answer directly if the question is about materials, setup, constraints, or logistics.
+        - If the question is vague or conceptual, respond with a short follow-up question to help them clarify.
+        - Be concise and friendly. Do not over-explain.
+        - The goal of the experiment should ultimately be to obtain data that helps students infer see whether the part of the system is reflecting, absorbing, or transmitting microwave radiation.
+
+        Temperature change is the main evidence for energy transfer. Encourage students to plan for before/after measurements of water temperature, and optionally of foil or platform.
+        
+        Available materials for experiment:
+        - 8 microwave-safe glass bowls (100-250 mL) with plastic lids
+        - microwave-safe plastic wrap (or lids) to lay on top of the glass bowls
+        - 2 sheets of heavy-duty aluminum foil (~8” x 12”)
+        - 2 sheets of hole-punched heavy-duty aluminum foil (~8” x 12”)
+        - cardboard and paper sheets
+        - 1 gallon of room-temperature tap water
+        - 3 microwave-safe plastic cutting boards to serve as a platform
+        - 4 microwave-safe plastic bowls (1” tall) to serve as spacers under the cutting board
+        - IR thermometer
+        - 1 graduated cylinder (100 mL)
+        - blocks of assorted metals: aluminum, brass, copper, iron
+
+        Essential Safety concerns:
+        1) To prevent any overheating:
+        - Limit the length of time for each test to 15 seconds on high power.
+        - Never run the microwave oven without something in it that is a known absorber, like an open cup of water.
+        2) When placing metal in the microwave, make sure to:
+        - Keep all metal objects at least 1 inch from the walls and floors of the microwave oven, using a plastic platform if needed.
+        - Make sure that something is in the microwave that is a known absorber, like an open cup of water.
+
+
+        Student message: {user_input}
+        """
+        else:
+            system_prompt = f"""
 You are a friendly lab coach helping students design and reflect on their microwave oven experiment. Keep responses short, thoughtful, and question-based.
 
 AI Rules:
 - Never explain how microwave radiation works. Ask questions instead.
+- If the experiment clearly violates the essential safety concerns, ask what they could revise to stay safe...
 - If the experiment clearly violates the essential safety concerns, ask what they could revise to stay safe. If it’s mostly safe or just missing a small detail, it’s okay to say it looks good overall.
 - Refer students back to the worksheet (left side) when appropriate.
 - When asking a question that's relevant to a specific question A–E, refer to the letter of the question explicitly by saying, "For Question E about ..." 
@@ -160,7 +208,7 @@ Use Markdown-style bold formatting. Do not repeat the names elsewhere in your me
     # Action buttons
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🚀 We have an experiment—how does it look?"):
+        if st.button("🚀 We have written a plan—how does it look?"):
             generate_response("experiment")
     with col2:
         if st.button("🧭 We’re not sure how to begin..."):
