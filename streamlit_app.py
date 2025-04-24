@@ -199,11 +199,14 @@ Use Markdown-style bold formatting. Do not repeat the names elsewhere in your me
 
     # Chat input
     with st.form(key="chat_form", clear_on_submit=True):
-        user_chat = st.text_input("Type a message and press Enter:", key="chat_input")
+        user_chat = st.text_input("To chat about clarifying questions, type a message and press Enter:", key="chat_input")
         submitted = st.form_submit_button("Send")
         if submitted and user_chat and user_chat != st.session_state.last_sent:
             generate_response("chat", user_chat)
             st.session_state.last_sent = user_chat
+
+    # Explanation above buttons
+    st.markdown("#### 🛠️ These buttons will use your work on the left to help you refine your experiment.")
 
     # Action buttons
     col1, col2 = st.columns(2)
