@@ -206,7 +206,7 @@ Use Markdown-style bold formatting. Do not repeat the names elsewhere in your me
             st.session_state.last_sent = user_chat
 
     # Explanation above buttons
-    st.markdown("#### 🛠️ These buttons will use your work on the left to help you refine your experiment.")
+    st.markdown("#### To refine your ideas on the left, use these buttons:")
 
     # Action buttons
     col1, col2 = st.columns(2)
